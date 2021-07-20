@@ -15,7 +15,7 @@
     <br>
     <h1>ERC20 TOKEN EXPLORE</h1>
     <div>
-      Token address: <input v-model="tokenAddressExplore" placeholder="Token address">
+      Token address: <input v-model="tokenAddressExplore" placeholder="Token address"> <button @click="erc20Explore">GET</button>
     </div>
     <div>
       Name: {{ tokenDetail.name }}
@@ -119,10 +119,7 @@ export default defineComponent({
   async mounted () {
     this.provider = await detectEthereumProvider() as any
     this.web3 = new Web3('https://data-seed-prebsc-2-s2.binance.org:8545/')
-    this.contract = new this.web3.eth.Contract(ERC20ABI as AbiItem[], this.tokenAddressExplore)
-    if (Web3.utils.isAddress(this.tokenAddressExplore)) {
-      this.erc20Explore()
-    }
+    this.erc20Explore()
   },
   watch: {
     tokenAddressExplore (val) {
@@ -135,6 +132,9 @@ export default defineComponent({
   },
   methods: {
     async erc20Explore () {
+      if (Web3.utils.isAddress(this.tokenAddressExplore)) {
+        this.contract = new this.web3.eth.Contract(ERC20ABI as AbiItem[], this.tokenAddressExplore)
+      }
       try {
         if (this.provider) {
           this.tokenDetail.name = await this.contract.methods.name().call({
@@ -152,6 +152,7 @@ export default defineComponent({
           this.tokenDetail.totalSupply = Web3.utils.fromWei(totalSupply, 'ether').toString()
           this.isTokenAddressCorrect = true
         }
+        this.$forceUpdate()
       } catch (err) {
         this.isTokenAddressCorrect = false
         console.log(err)
